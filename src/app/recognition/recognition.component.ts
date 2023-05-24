@@ -55,7 +55,9 @@ export class RecognitionComponent implements OnInit, OnDestroy {
     this.recorder = recorder;
     recorder.ondataavailable = (ev: BlobEvent) => {
       if (ev.data.size) {
-        console.log('data', ev.data);
+        this.whisper.recognize(ev.data).subscribe((result) => {
+          console.log('result', result);
+        })
       }
     }
   }
@@ -83,7 +85,8 @@ export class RecognitionComponent implements OnInit, OnDestroy {
         const ts: number = Date.now();
         this.recognizedText.set(ts, text);
         this._updateRenderedText();
-        this.recorder?.requestData();
+        this.recorder?.stop();
+        this.recorder?.start();
       }
     })
   }
