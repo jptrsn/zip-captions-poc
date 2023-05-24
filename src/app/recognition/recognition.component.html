@@ -1,0 +1,11 @@
+<h1>Speech Recognition</h1>
+<!-- <button (click)="setThreshold()">Set Mic Threshold</button> -->
+<button (click)="start()" [disabled]="!loaded()">Start</button>
+<button (click)="stop()">Stop</button>
+<meter *ngIf="(vol$ | async) as level" [value]="level"></meter>
+<div class="rendered-text">
+  <div *ngFor="let text of renderedText()">
+    {{text}}
+  </div>
+</div>
+<div class="live-text">{{partialText()}}</div>
