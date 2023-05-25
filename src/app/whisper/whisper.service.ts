@@ -6,8 +6,8 @@ import { Observable, Subject, from, switchMap, tap } from 'rxjs';
 })
 export class WhisperService {
 
-  // private readonly apiUrl = 'https://api.educoder.dev';
-  private readonly apiUrl = 'http://localhost:8081';
+  private readonly apiUrl = 'https://api.educoder.dev';
+  // private readonly apiUrl = 'http://localhost:8081';
   private response$: Subject<any> = new Subject<any>();
   private data: Blob[] = [];
   constructor(private http: HttpClient) { }
