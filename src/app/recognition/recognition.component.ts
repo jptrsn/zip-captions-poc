@@ -14,6 +14,7 @@ export class RecognitionComponent implements OnInit, OnDestroy {
   public partialText: WritableSignal<string> = signal<string>('');
   private recognizedText: Map<number, string> = new Map();
   public renderedText: WritableSignal<string[]> = signal<string[]>([]);
+  public whisperCapturedText: WritableSignal<string[]> = signal<string[]>([]);
   public vol$!: Observable<number>;
   private recorder?: MediaRecorder;
   private stop$: Subject<void> = new Subject<void>();
@@ -23,12 +24,22 @@ export class RecognitionComponent implements OnInit, OnDestroy {
               private whisper: WhisperService) {}
 
   ngOnInit(): void {
-    this.recognition.init();
     this.vol$ = this.recorderService.micLevel$.pipe(takeUntil(this.onDestroy$))
+    this._initRecognition();
     this.recorderService.getMediaRecorder('default').pipe(take(1)).subscribe((recorder) => {
       this._initRecorder(recorder);
       this.loaded.set(true)
     });
+    this.whisper.getResponse().pipe(
+      takeUntil(this.onDestroy$)
+    ).subscribe((response) => {
+      console.log('whisper', response);
+      this.whisperCapturedText.update((text) => {
+        text.push(...response.segments.map((seg: any) => seg.text));
+        console.log(text)
+        return text;
+      })
+    })
   }
 
   ngOnDestroy(): void {
@@ -40,29 +51,35 @@ export class RecognitionComponent implements OnInit, OnDestroy {
   }
 
   start(): void {
-    console.log('start', this.recorder);
     this._startRecognition();
     this._startRecording();
   }
 
   stop(): void {
-    console.log('stop');
-    this.recognition.stop();
     this.stop$.next();
   }
 
   private _initRecorder(recorder: MediaRecorder): void {
     this.recorder = recorder;
-    recorder.ondataavailable = (ev: BlobEvent) => {
-      if (ev.data.size) {
-        this.whisper.recognize(ev.data).subscribe((result) => {
-          console.log('result', result);
-        })
+    this.whisper.watchRecorder(recorder);
+  }
+
+  private _initRecognition(): void {
+    this.recognition.init();
+    this.recognition.recognizedText$.pipe(
+      takeUntil(this.onDestroy$)
+    ).subscribe((text) => {
+      if (text.length) {
+        console.log(text)
+        const ts: number = Date.now();
+        this.recognizedText.set(ts, text);
+        this._updateRenderedText();
       }
-    }
+    });
   }
 
   private _startRecording(): void {
+    console.log('start', this.recorder?.state);
     this.recorder?.start();
     this.stop$.pipe(
       take(1)
@@ -77,18 +94,10 @@ export class RecognitionComponent implements OnInit, OnDestroy {
       takeUntil(this.stop$)
     ).subscribe((partialText) => {
       this.partialText.set(partialText);
-    })
-    this.recognition.recognizedText$.pipe(
-      takeUntil(this.onDestroy$)
-    ).subscribe((text) => {
-      if (text.length) {
-        const ts: number = Date.now();
-        this.recognizedText.set(ts, text);
-        this._updateRenderedText();
-        this.recorder?.stop();
-        this.recorder?.start();
-      }
-    })
+    });
+    this.stop$.pipe(
+      take(1)
+    ).subscribe(() => this.recognition.stop());
   }
 
   private _updateRenderedText(): void {
