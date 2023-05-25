@@ -79,12 +79,10 @@ export class RecognitionComponent implements OnInit, OnDestroy {
   }
 
   private _startRecording(): void {
-    console.log('start', this.recorder?.state);
     this.recorder?.start();
     this.stop$.pipe(
       take(1)
     ).subscribe(() => {
-      console.log('stopping');
       this.recorder?.stop();
     })
   }
@@ -97,7 +95,10 @@ export class RecognitionComponent implements OnInit, OnDestroy {
     });
     this.stop$.pipe(
       take(1)
-    ).subscribe(() => this.recognition.stop());
+    ).subscribe(() => {
+      this.recognition.stop();
+      this.partialText.set('')
+    });
   }
 
   private _updateRenderedText(): void {

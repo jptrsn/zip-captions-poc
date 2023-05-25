@@ -8,7 +8,7 @@ declare const webkitSpeechRecognition: any;
 export class RecognitionService {
   public recognizedText$: Subject<string> = new Subject<string>;
   
-  private liveOutput$!: Subject<string>;
+  private liveOutput$: Subject<string> = new Subject<string>();
   private transcript?: string;
   private isStoppedSpeechRecog: boolean;
   private recognition: any;
@@ -34,7 +34,7 @@ export class RecognitionService {
       if (this.transcript) {
         this.recognizedText$.next(this.transcript as string);
         delete this.transcript;
-        this.liveOutput$.next('')
+        this.liveOutput$.next('');
       }
       if (this.isStoppedSpeechRecog) {
         this.recognition.stop();
@@ -47,7 +47,6 @@ export class RecognitionService {
   start(): Observable<string> {
     this.isStoppedSpeechRecog = false;
     this.recognition.start();
-    this.liveOutput$ = new Subject<string>();
     return this.liveOutput$.pipe(
       distinctUntilChanged()
     );
