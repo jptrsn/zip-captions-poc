@@ -7,8 +7,8 @@ import { WhisperResponse } from './whisper.model';
 })
 export class WhisperService {
 
-  // private readonly apiUrl = 'https://api.educoder.dev';
-  private readonly apiUrl = 'http://localhost:8081';
+  private readonly apiUrl = 'https://api.educoder.dev';
+  // private readonly apiUrl = 'http://localhost:8081';
   private allResponses: string[] = [];
   private response$: Subject<string[]> = new Subject<string[]>();
   constructor(private http: HttpClient) { }
@@ -58,7 +58,7 @@ export class WhisperService {
     // })
     // result.push(text);
     // this.allResponses.push(...result);
-    
+    console.log(response);
     this.allResponses.push(response.text);
     this.response$.next(this.allResponses);
   }

@@ -33,6 +33,7 @@ export class RecognitionComponent implements OnInit, OnDestroy {
   }
 
   enable(): void {
+    this.recorderService.init();
     this.recorderService.getMediaRecorder('default').pipe(take(1)).subscribe((recorder) => {
       this._initRecorder(recorder);
       this._initRecognition();

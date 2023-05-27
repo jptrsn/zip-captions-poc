@@ -8,7 +8,9 @@ export class RecorderService {
   public micLevel$: Subject<number> = new Subject<number>();
   private threshold = 0.1;
   private _context!: AudioContext;
-  constructor() {
+  constructor() {}
+
+  public init(): void {
     this._context = new window.AudioContext();
   }
 
