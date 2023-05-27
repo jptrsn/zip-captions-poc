@@ -1,5 +1,6 @@
 <h1>Speech Recognition</h1>
 <!-- <button (click)="setThreshold()">Set Mic Threshold</button> -->
+<button *ngIf="!loaded()" (click)="enable()">Enable Microphone</button>
 <button (click)="start()" [disabled]="!loaded()">Start</button>
 <button (click)="stop()">Stop</button>
 <meter *ngIf="(vol$ | async) as level" [value]="level"></meter>

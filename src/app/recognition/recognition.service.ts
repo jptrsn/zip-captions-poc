@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject, distinctUntilChanged } from 'rxjs';
-declare const webkitSpeechRecognition: any;
+import { BehaviorSubject, Observable, Subject, distinctUntilChanged } from 'rxjs';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+declare const webkitSpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
 
 @Injectable({
   providedIn: 'root'
 })
 export class RecognitionService {
   public recognizedText$: Subject<string> = new Subject<string>;
-  
+  public speaking$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private liveOutput$: Subject<string> = new Subject<string>();
   private transcript?: string;
   private isStoppedSpeechRecog: boolean;
@@ -30,7 +32,18 @@ export class RecognitionService {
       this.liveOutput$.next(this.transcript);
     });
 
+    this.recognition.addEventListener('speechstart', () => {
+      console.log('speech start')
+      this.speaking$.next(true);
+    })
+
+    this.recognition.addEventListener('speechend', () => {
+      console.log('speech end')
+      this.speaking$.next(false);
+    })
+
     this.recognition.addEventListener('end', () => {
+      console.log('recognition end')
       if (this.transcript) {
         this.recognizedText$.next(this.transcript as string);
         delete this.transcript;
@@ -55,6 +68,5 @@ export class RecognitionService {
   stop(): void {
     this.isStoppedSpeechRecog = true;
     this.recognition.abort();
-    this.liveOutput$.complete();
   }
 }

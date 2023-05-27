@@ -25,25 +25,24 @@ export class RecognitionComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.vol$ = this.recorderService.micLevel$.pipe(takeUntil(this.onDestroy$))
-    this._initRecognition();
-    this.recorderService.getMediaRecorder('default').pipe(take(1)).subscribe((recorder) => {
-      this._initRecorder(recorder);
-      this.loaded.set(true)
-    });
-    this.whisper.getResponse().pipe(
-      takeUntil(this.onDestroy$)
-    ).subscribe((response) => {
-      console.log('whisper', response);
-      this.whisperCapturedText.update((text) => {
-        text.push(...response.segments.map((seg: any) => seg.text));
-        console.log(text)
-        return text;
-      })
-    })
+    // this.vol$.subscribe((level) => console.log(level))
   }
 
   ngOnDestroy(): void {
     this.onDestroy$.next();
+  }
+
+  enable(): void {
+    this.recorderService.getMediaRecorder('default').pipe(take(1)).subscribe((recorder) => {
+      this._initRecorder(recorder);
+      this._initRecognition();
+      this.loaded.set(true)
+    });
+    this.whisper.getParsedOutput().pipe(
+      takeUntil(this.onDestroy$)
+    ).subscribe((response: string[]) => {
+      this.whisperCapturedText.set(response)
+    })
   }
   
   setThreshold(): void {
@@ -70,7 +69,9 @@ export class RecognitionComponent implements OnInit, OnDestroy {
       takeUntil(this.onDestroy$)
     ).subscribe((text) => {
       if (text.length) {
-        console.log(text)
+        console.log(text);
+        this.recorder?.stop();
+        this.recorder?.start();
         const ts: number = Date.now();
         this.recognizedText.set(ts, text);
         this._updateRenderedText();
@@ -80,6 +81,16 @@ export class RecognitionComponent implements OnInit, OnDestroy {
 
   private _startRecording(): void {
     this.recorder?.start();
+    this.recognition.speaking$.pipe(
+      takeUntil(this.stop$)
+    ).subscribe((isSpeaking: boolean) => {
+      console.log('isSpeaking', isSpeaking);
+      if (isSpeaking && this.recorder?.state === 'paused') {
+        this.recorder.resume()
+      } else if (!isSpeaking && this.recorder?.state === 'recording') {
+        this.recorder.pause();
+      }
+    })
     this.stop$.pipe(
       take(1)
     ).subscribe(() => {
