@@ -46,10 +46,6 @@ export class RecognitionComponent implements OnInit, OnDestroy {
     })
   }
   
-  setThreshold(): void {
-    this.recorderService.setThreshold(5);
-  }
-
   start(): void {
     this._startRecognition();
     this._startRecording();

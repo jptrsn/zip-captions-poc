@@ -6,10 +6,8 @@ import { Observable, Subject, bufferWhen, from, map } from 'rxjs';
 })
 export class RecorderService {
   public micLevel$: Subject<number> = new Subject<number>();
-  private threshold = 0.1;
   private _context!: AudioContext;
-  constructor() {}
-
+  
   public init(): void {
     this._context = new window.AudioContext();
   }
@@ -20,26 +18,12 @@ export class RecorderService {
     )
   }
 
-  public setThreshold(durationInSeconds: number): void {
-    const end = new Subject<void>();
-    setTimeout(() => end.next(), durationInSeconds * 1000);
-    this.micLevel$.pipe(
-      bufferWhen(() => end)
-    ).subscribe((result: number[]) => {
-      const avg = result.reduce((a, b) => a + b) / result.length;
-      this.threshold = avg;
-      console.log(avg);
-    })
-  }
-
   private _observeAudioStream(stream: MediaStream): MediaRecorder {
     const recorder = new MediaRecorder(stream);
     const sourceNode: MediaStreamAudioSourceNode = this._context.createMediaStreamSource(stream);
     const analyserNode: AnalyserNode = this._context.createAnalyser();    
     sourceNode.connect(analyserNode);
     const pcmData = new Float32Array(analyserNode.fftSize);
-    let stop = false;
-    recorder.addEventListener('stop', () => stop = true);
     const onFrame = () => {
         analyserNode.getFloatTimeDomainData(pcmData);
         let sumSquares = 0.0;
