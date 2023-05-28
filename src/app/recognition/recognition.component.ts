@@ -11,11 +11,13 @@ import { RecorderService } from '../recorder/recorder.service';
 })
 export class RecognitionComponent implements OnInit, OnDestroy {
   public loaded: WritableSignal<boolean> = signal<boolean>(false);
+  public errorMessage: WritableSignal<string> = signal<string>('');
   public partialText: WritableSignal<string> = signal<string>('');
   private recognizedText: Map<number, string> = new Map();
   public renderedText: WritableSignal<string[]> = signal<string[]>([]);
   public whisperCapturedText: WritableSignal<string[]> = signal<string[]>([]);
   public vol$!: Observable<number>;
+  public shouldRecord: WritableSignal<boolean> = signal(false);
   private recorder?: MediaRecorder;
   private stop$: Subject<void> = new Subject<void>();
   private onDestroy$: Subject<void> = new Subject<void>();
@@ -25,7 +27,6 @@ export class RecognitionComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.vol$ = this.recorderService.micLevel$.pipe(takeUntil(this.onDestroy$))
-    // this.vol$.subscribe((level) => console.log(level))
   }
 
   ngOnDestroy(): void {
@@ -43,12 +44,14 @@ export class RecognitionComponent implements OnInit, OnDestroy {
       takeUntil(this.onDestroy$)
     ).subscribe((response: string[]) => {
       this.whisperCapturedText.set(response)
-    })
+    });
   }
   
   start(): void {
     this._startRecognition();
-    this._startRecording();
+    if (this.shouldRecord()) {
+      this._startRecording();
+    }
   }
 
   stop(): void {
@@ -74,6 +77,12 @@ export class RecognitionComponent implements OnInit, OnDestroy {
         this._updateRenderedText();
       }
     });
+    this.recognition.error$.pipe(
+      takeUntil(this.onDestroy$)
+    ).subscribe((error: {message: string}) => {
+      this.loaded.set(false);
+      this.errorMessage.set(error.message);
+    })
   }
 
   private _startRecording(): void {

@@ -1,4 +1,4 @@
-<div class="flex flex-row space-x-4 shadow-lg px-8 py-4">
+<div class="flex flex-row space-x-4 shadow-lg px-8 py-4 items-center">
   <span class="flex-auto text-lg sha font-extrabold">Zip Captions</span>
   <div class="dropdown">
     <label tabindex="0" class="m-1 btn rounded-full">
@@ -6,7 +6,7 @@
     </label>
     <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
       <li *ngFor="let item of menuItems">
-        <a>{{item}}</a>
+        <a>{{item | proper}}</a>
       </li>
     </ul>
   </div>

@@ -10,6 +10,7 @@ declare const webkitSpeechRecognition = SpeechRecognition || webkitSpeechRecogni
 export class RecognitionService {
   public recognizedText$: Subject<string> = new Subject<string>;
   public speaking$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  public error$: Subject<{message: string}> = new Subject<{message: string}>();
   private liveOutput$: Subject<string> = new Subject<string>();
   private transcript?: string;
   private isStoppedSpeechRecog: boolean;
@@ -25,6 +26,7 @@ export class RecognitionService {
     this.recognition.lang = navigator.language;
 
     this.recognition.addEventListener('result', (e: any) => {
+      console.log('result', e)
       this.transcript = Array.from(e.results)
       .map((result: any) => result[0])
       .map((result) => result.transcript)
@@ -40,6 +42,17 @@ export class RecognitionService {
     this.recognition.addEventListener('speechend', () => {
       console.log('speech end')
       this.speaking$.next(false);
+    })
+
+    this.recognition.addEventListener('error', (err: ErrorEvent) => {
+      console.log('recognition error', err);
+      if (err.error === 'network') {
+        this.error$.next({message: 'The service encountered a network error, recognition has stopped.'});
+      } else {
+        this.error$.next({message: `The service has encountered a ${err.error} error, recogntion has stopped.`})
+      }
+      this.isStoppedSpeechRecog = true;
+      this.recognition.stop();
     })
 
     this.recognition.addEventListener('end', () => {

@@ -1,9 +1,27 @@
-<h1>Speech Recognition</h1>
-<button *ngIf="!loaded()" (click)="enable()">Enable Microphone</button>
-<button (click)="start()" [disabled]="!loaded()">Start</button>
-<button (click)="stop()">Stop</button>
-<meter *ngIf="(vol$ | async) as level" [value]="level"></meter>
-<div>
+<div class="flex flex-col justify-start basis-full">
+  <ng-container *ngIf="!loaded(); else loadedView">
+    <div class="flex flex-col items-center justify-center">
+      <div class="text-lg">Enable your microphone</div>
+      <button class="btn" (click)="enable()" [disabled]="errorMessage()">
+        <ng-icon name="heroMicrophone"></ng-icon>
+      </button>
+      <div class="flex-auto text-base font-extrabold text-error" *ngIf="errorMessage() as err">{{err}}</div>
+    </div>
+  </ng-container>
+  <ng-template #loadedView>
+    <div class="flex flex-col">
+      <div class="flex flex-row basis-full items-center">
+        <button class="btn" (click)="start()">Start</button>
+        <button class="btn" (click)="stop()">Stop</button>
+        <span class="flex-grow flex-shrink basis-full"></span>
+        <meter *ngIf="(vol$ | async) as level" [value]="level"></meter>
+      </div>
+
+    </div>
+  
+  </ng-template>
+</div>
+  <div>
   <div class="rendered-text">
     <div *ngFor="let text of renderedText()">
       {{text}}
