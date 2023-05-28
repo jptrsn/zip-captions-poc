@@ -5,20 +5,16 @@ import { AppComponent } from './app.component';
 import { appRoutes } from './app.routes';
 import { RecognitionComponent } from './recognition/recognition.component';
 import { HttpClientModule } from '@angular/common/http';
+import { HeaderComponent } from './header/header.component';
 
 @NgModule({
-  declarations: [
-    AppComponent, 
-    RecognitionComponent,
-  ],
+  declarations: [AppComponent, RecognitionComponent, HeaderComponent],
   imports: [
     HttpClientModule,
     BrowserModule,
     RouterModule.forRoot(appRoutes, { initialNavigation: 'enabledBlocking' }),
   ],
-  providers: [
-    HttpClientModule,
-  ],
+  providers: [HttpClientModule],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
