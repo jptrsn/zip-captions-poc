@@ -19,6 +19,7 @@ import { AboutComponent } from './about/about.component';
 import { AudioInputSelectComponent } from './audio-input-select/audio-input-select.component';
 import { heroMicrophoneSlash } from './vectors/vectors';
 import { BackgroundMagnitudeDirective } from './directives/background-magnitude.directive';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { BackgroundMagnitudeDirective } from './directives/background-magnitude.
   imports: [
     HttpClientModule,
     BrowserModule,
+    BrowserAnimationsModule,
     RouterModule.forRoot(appRoutes, { initialNavigation: 'enabledBlocking' }),
     NgIconsModule.withIcons({
       heroBars3,

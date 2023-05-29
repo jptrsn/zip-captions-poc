@@ -1,3 +1,3 @@
-<footer class="footer flex flex-row px-4 py-4 justify-end">
-  <span class="text-sm text-base-content">Copyright 2023 - Zip Captions</span>
+<footer class="footer flex flex-auto flex-row justify-end" [@growShrinkVertical]="(growShrink$ | async)">
+  <span class="text-sm mx-4 my-2 text-base-content">Copyright 2023 - Zip Captions</span>
 </footer>
