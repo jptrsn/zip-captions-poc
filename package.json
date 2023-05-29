@@ -20,6 +20,7 @@
     "@ng-icons/core": "^25.0.1",
     "@ng-icons/heroicons": "^25.0.1",
     "@nx/angular": "16.2.2",
+    "@types/dom-speech-recognition": "^0.0.1",
     "daisyui": "^2.51.6",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

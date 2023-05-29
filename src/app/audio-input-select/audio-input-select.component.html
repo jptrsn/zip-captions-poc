@@ -1,0 +1,8 @@
+<button class="btn rounded-full" [ngClass]="{'btn-accent': enabled(), 'btn-secondary': !enabled()}" aria-lable="Enable microphone use" (click)="toggle()" zipCaptionsBackgroundMagnitude [magnitude]="volume$ | async" >
+  <ng-container *ngIf="enabled(); else microphoneDisabled">
+    <ng-icon name="heroMicrophone"></ng-icon>
+  </ng-container>
+  <ng-template #microphoneDisabled>
+    <ng-icon name="heroMicrophoneSlash"></ng-icon>
+  </ng-template>
+</button>

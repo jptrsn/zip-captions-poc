@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, WritableSignal, signal } from '@angular/core';
 import { WhisperService } from '../whisper/whisper.service';
 import { RecognitionService } from './recognition.service';
-import { Observable, Subject, take, takeUntil } from 'rxjs';
+import { Observable, Subject, forkJoin, take, takeUntil } from 'rxjs';
 import { RecorderService } from '../recorder/recorder.service';
 
 @Component({
@@ -10,16 +10,20 @@ import { RecorderService } from '../recorder/recorder.service';
   styleUrls: ['./recognition.component.scss'],
 })
 export class RecognitionComponent implements OnInit, OnDestroy {
+  
   public loaded: WritableSignal<boolean> = signal<boolean>(false);
   public errorMessage: WritableSignal<string> = signal<string>('');
+  public isListening: WritableSignal<boolean> = signal<boolean>(false);
   public partialText: WritableSignal<string> = signal<string>('');
-  private recognizedText: Map<number, string> = new Map();
   public renderedText: WritableSignal<string[]> = signal<string[]>([]);
   public whisperCapturedText: WritableSignal<string[]> = signal<string[]>([]);
   public vol$!: Observable<number>;
   public shouldRecord: WritableSignal<boolean> = signal(false);
+  
+  private recognizedText: Map<number, string> = new Map();
   private recorder?: MediaRecorder;
   private stop$: Subject<void> = new Subject<void>();
+  private disconnect$: Subject<void> = new Subject<void>();
   private onDestroy$: Subject<void> = new Subject<void>();
   constructor(private recognition: RecognitionService,
               private recorderService: RecorderService,
@@ -27,6 +31,7 @@ export class RecognitionComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.vol$ = this.recorderService.micLevel$.pipe(takeUntil(this.onDestroy$))
+    this._initRecognition();
   }
 
   ngOnDestroy(): void {
@@ -36,15 +41,23 @@ export class RecognitionComponent implements OnInit, OnDestroy {
   enable(): void {
     this.recorderService.init();
     this.recorderService.getMediaRecorder('default').pipe(take(1)).subscribe((recorder) => {
-      this._initRecorder(recorder);
-      this._initRecognition();
-      this.loaded.set(true)
+      if (this.shouldRecord()) {
+        this._initRecorder(recorder);
+      }
+      this._startListening();
+      this.loaded.set(true);
     });
     this.whisper.getParsedOutput().pipe(
-      takeUntil(this.onDestroy$)
+      takeUntil(forkJoin([this.onDestroy$,this.disconnect$]))
     ).subscribe((response: string[]) => {
       this.whisperCapturedText.set(response)
     });
+  }
+
+  disable(): void {
+    this.disconnect$.next();
+    this.recorderService.stopAudioStream();
+    this.loaded.set(false);
   }
   
   start(): void {
@@ -63,10 +76,9 @@ export class RecognitionComponent implements OnInit, OnDestroy {
     this.whisper.watchRecorder(recorder);
   }
 
-  private _initRecognition(): void {
-    this.recognition.init();
+  private _startListening(): void {
     this.recognition.recognizedText$.pipe(
-      takeUntil(this.onDestroy$)
+      takeUntil(forkJoin([this.onDestroy$, this.disconnect$]))
     ).subscribe((text) => {
       if (text.length) {
         console.log(text);
@@ -77,12 +89,16 @@ export class RecognitionComponent implements OnInit, OnDestroy {
         this._updateRenderedText();
       }
     });
+  }
+
+  private _initRecognition(): void {
+    this.recognition.init();
     this.recognition.error$.pipe(
       takeUntil(this.onDestroy$)
     ).subscribe((error: {message: string}) => {
-      this.loaded.set(false);
+      this.disable();
       this.errorMessage.set(error.message);
-    })
+    });
   }
 
   private _startRecording(): void {
@@ -105,6 +121,7 @@ export class RecognitionComponent implements OnInit, OnDestroy {
   }
 
   private _startRecognition(): void {
+    this.isListening.set(true);
     this.recognition.start().pipe(
       takeUntil(this.stop$)
     ).subscribe((partialText) => {
@@ -114,6 +131,7 @@ export class RecognitionComponent implements OnInit, OnDestroy {
       take(1)
     ).subscribe(() => {
       this.recognition.stop();
+      this.isListening.set(false);
       this.partialText.set('')
     });
   }

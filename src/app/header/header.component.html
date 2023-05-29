@@ -1,13 +1,15 @@
 <div class="flex flex-row space-x-4 shadow-lg px-8 py-4 items-center">
+  <img src="assets/icons/basic_icon_white.svg" class="w-12 h-12">
   <span class="flex-auto text-lg sha font-extrabold">Zip Captions</span>
-  <div class="dropdown">
+  <zip-captions-audio-input-select></zip-captions-audio-input-select>
+  <div class="dropdown dropdown-end dropdown-hover">
+    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+      <li [ngClass]="{'disabled': activeRoute() === item.routerOutlet}" *ngFor="let item of menuItems">
+        <a [routerLink]="activeRoute() === item.routerOutlet ? null : item.routerOutlet">{{item.label | proper}}</a>
+      </li>
+    </ul>
     <label tabindex="0" class="m-1 btn rounded-full">
       <ng-icon name="heroBars3" size="18" strokeWidth="2.5"></ng-icon>
     </label>
-    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-      <li *ngFor="let item of menuItems">
-        <a>{{item | proper}}</a>
-      </li>
-    </ul>
   </div>
 </div>
