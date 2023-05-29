@@ -18,7 +18,6 @@ import { Observable, Subject, map, startWith, takeUntil } from 'rxjs';
         opacity: 0,
         transform: 'scaleY(0)',
         height: '0px',
-        overflow: 'hidden',
       })),
       transition('show => hide', animate(`500ms ease-out`)),
       transition('hide => show', animate(`500ms ease-in`)),
