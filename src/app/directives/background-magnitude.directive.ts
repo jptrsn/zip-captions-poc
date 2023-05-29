@@ -6,7 +6,7 @@ import { Directive, ElementRef, Input, OnChanges, SimpleChanges } from '@angular
 export class BackgroundMagnitudeDirective implements OnChanges {
   @Input() magnitude!: number | null;
   @Input() lower = 'darkblue';
-  @Input() upper = 'lightblue';
+  @Input() upper = 'transparent';
   constructor(private el: ElementRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
